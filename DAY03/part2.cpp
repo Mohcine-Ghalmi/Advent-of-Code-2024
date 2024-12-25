@@ -1,55 +1,41 @@
 #include <iostream>
 #include <fstream>
-#include <algorithm>
-#include <vector>
+#include <string>
 #include <regex>
+#include <sstream>
 
-using namespace std;
+int calculateConditionalMultiplications(const std::string& fileContent) {
+	std::regex instructionPattern(R"(do\(\)|don't\(\)|mul\((\d{1,3}),(\d{1,3})\))");
+	std::smatch match;
+	std::string::const_iterator searchStart(fileContent.cbegin());
 
-int mul(int a, int b) {
-    return a * b;
+	bool isEnabled = true; 
+	int totalSum = 0;
+
+	while (std::regex_search(searchStart, fileContent.cend(), match, instructionPattern)) {
+		std::string instruction = match[0];
+		if (instruction == "do()")
+			isEnabled = true;
+		else if (instruction == "don't()")
+			isEnabled = false;
+		else if (match[1].matched && match[2].matched)
+			if (isEnabled) {
+				int x = std::stoi(match[1].str());
+				int y = std::stoi(match[2].str());
+				totalSum += x * y;
+			}
+		searchStart = match.suffix().first;
+	}
+	return (totalSum);
 }
 
-int extractAndMultiply(const string& line) {
-    bool isEnabled = true;
-    regex mulRegex(R"(mul\((\d+),(\d+)\))");
-    regex doRegex(R"(do\(\))");
-    regex dontRegex(R"(don't\(\))");
-    smatch match;
-    int sum = 0;
-    string::const_iterator searchStart(line.cbegin());
-    while (searchStart != line.cend()) {
-        if (regex_search(searchStart, line.cend(), match, doRegex)) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-            isEnabled = true;
-            searchStart = match.suffix().first;
-        } else if (regex_search(searchStart, line.cend(), match, dontRegex)) {
-            isEnabled = false;
-            searchStart = match.suffix().first;
-        }
-        if (regex_search(searchStart, line.cend(), match, mulRegex)) {
-            if (isEnabled) {
-                int a = stoi(match[1]);
-                int b = stoi(match[2]);
-                cout << "A = " << a << ", B = " << b << " -> " << a * b << endl;
-                sum += mul(a, b);
-            }
-            searchStart = match.suffix().first;
-        } else {
-            ++searchStart;
-        }
-    }
-    return sum;
+int main()
+{
+    std::ifstream fileInput("test.txt");
+	std::stringstream buffer;
+	buffer << fileInput.rdbuf();
+	std::string fileContent = buffer.str();
+	int result = calculateConditionalMultiplications(fileContent);
+	std::cout << "Sum of enabled multiplications: " << result << std::endl;
+	return (0);
 }
-
-int main(void) {
-    ifstream inputFile("test.txt");
-    string line;
-    
-    int totalSum = 0;
-    while (getline(inputFile, line))
-        totalSum += extractAndMultiply(line);
-    
-    cout << "sum: " << totalSum << endl;
-    return 0;
-}
-
